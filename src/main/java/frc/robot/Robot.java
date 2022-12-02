@@ -10,6 +10,7 @@ import com.ctre.phoenix.motorcontrol.can.BaseTalon;
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.motors.FloorMotors;
 import frc.robot.motors.IntakeMotors;
 import frc.robot.operators.CoDriver;
@@ -17,6 +18,7 @@ import frc.robot.operators.Driver;
 import frc.robot.operators.GlobalOperator;
 import frc.robot.operators.Limelight;
 import frc.robot.operators.Operator;
+import frc.robot.util.AutonomousV1;
 import frc.robot.util.AutonomousV2;
 
 /**
@@ -35,7 +37,6 @@ public class Robot extends TimedRobot {
     new Limelight()
   };
   public static final Timer timer = new Timer();
-
   @Override
   public boolean isDisabled() {
       if(CoDriver.isThreadStarted) {
@@ -82,13 +83,22 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousInit() {
     // AutonomousV1.init(timer);
-    AutonomousV2.init();
+    AutonomousV1.init();
   }
 
   /** This function is called periodically during autonomous. */
   @Override
   public void autonomousPeriodic() {
     // AutonomousV1.tick();
+    double distance = (((Limelight)Robot.operators[2]).getDistance() + 6)/12;
+        /*
+        if (distance > 300/12){
+            distance = 10;
+        } else if (distance < -1){
+            distance = 10;
+        }*/
+        // Intake main control code
+    SmartDashboard.putNumber("Limelight Distance", distance);
   }
 
   /**
@@ -110,7 +120,7 @@ public class Robot extends TimedRobot {
     IntakeMotors.printTemperature();
     for(Operator op : Robot.operators) {
       if(op instanceof GlobalOperator) {
-          ((GlobalOperator)op).onGlobalTick();
+        ((GlobalOperator)op).onGlobalTick();
       } else {
         op.tick();
       }

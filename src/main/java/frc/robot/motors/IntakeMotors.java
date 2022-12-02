@@ -19,7 +19,7 @@ public class IntakeMotors implements MotorGroup {
     public static final TalonFX tipFront = new TalonFX(10);
     public static final TalonFX tipBack = new TalonFX(9);
     // Misc.
-    private static final BaseTalon[] motors = new BaseTalon[] {
+    public static final BaseTalon[] motors = new BaseTalon[] {
             mainFront,
             mainBack,
             tipFront,

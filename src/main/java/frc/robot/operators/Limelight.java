@@ -25,7 +25,7 @@ public class Limelight extends Operator implements GlobalOperator {
     public double getDistance() {
         double offsetAngle = 11;
         double robotCameraHeight = 28.25; 
-        double goalHeight = 120; 
+        double goalHeight = 104; 
 
         double angleToGoalRadians = (y + offsetAngle) * (Math.PI / 180.0);
 

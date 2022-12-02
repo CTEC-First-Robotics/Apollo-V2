@@ -2,6 +2,8 @@ package frc.robot.operators;
 
 import com.ctre.phoenix.motorcontrol.TalonFXControlMode;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Robot;
 import frc.robot.motors.FloorMotors;
 
@@ -23,15 +25,6 @@ public class Driver extends Operator {
     public void tick() {
         // Test
         Limelight limelight = (Limelight) Robot.operators[2];
-        System.out.println(limelight.getDistance());
-
-        // DO NOT REMOVE: EMERGENCY STOP ARM
-        if (controller.getXButton() && controller.getYButton() && controller.getBButton()
-                && controller.getAButton()) {
-            CoDriver.isEmergencyStopped = true;
-            CoDriver.armExtnd1.set(TalonFXControlMode.PercentOutput, 0);
-            CoDriver.armExtnd2.set(TalonFXControlMode.PercentOutput, 0);
-        }
 
         if (controller.getPOV() == 180 && Math.abs(controller.getRightX()) < 0.2 && Math.abs(getLeftYIvrt()) < 0.2 && inverted == false ) {
             floorMotors.invertMotors();
@@ -44,11 +37,11 @@ public class Driver extends Operator {
          
         //turbo
         if (controller.getRightTriggerAxis() > 0.1) {
-            FloorMotors.speedMod = 0.9;
+            FloorMotors.speedMod = 1;
         } else if (controller.getLeftTriggerAxis() > 0.1) {
             FloorMotors.speedMod = 0.5;
         } else {
-            FloorMotors.speedMod = 0.25;
+            FloorMotors.speedMod = 0.7;
         }
 
 
@@ -100,7 +93,7 @@ public class Driver extends Operator {
                 public void run() {
                     driverHalted = true;
                     int failCount = 0;
-                    while(limelight.x > 2 || limelight.x == 0.0 && !(limelight.x < -2 || limelight.x == 0.0)) {
+                    while(limelight.x > 3 || limelight.x == 0.0 && !(limelight.x < -3 || limelight.x == 0.0)) {
                         floorMotors.spinMainForward(-pivetTurnReduction * 0.5);
                         floorMotors.spinSecondaryForward(pivetTurnReduction * 0.5);
                         if(limelight.x == 0.0) {
@@ -110,7 +103,9 @@ public class Driver extends Operator {
                             break;
                         }
                     }
-                    while((limelight.x < -2 || limelight.x == 0.0) && !(limelight.x > 2 || limelight.x == 0.0)) {
+                    floorMotors.stopMain();
+                    floorMotors.stopSecondary();
+                    while((limelight.x < -3 || limelight.x == 0.0) && !(limelight.x > 3 || limelight.x == 0.0)) {
                         floorMotors.spinMainForward(pivetTurnReduction * 0.5);
                         floorMotors.spinSecondaryForward(-pivetTurnReduction * 0.5);
                         if(limelight.x == 0.0) {
@@ -120,6 +115,8 @@ public class Driver extends Operator {
                             break;
                         }
                     }
+                    floorMotors.stopMain();
+                    floorMotors.stopSecondary();
                     driverHalted = false;
                 };
             }).start();

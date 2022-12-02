@@ -5,9 +5,12 @@ import com.ctre.phoenix.motorcontrol.TalonFXControlMode;
 import com.ctre.phoenix.motorcontrol.TalonSRXControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
+
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Robot;
 import frc.robot.motors.IntakeMotors;
 
@@ -35,17 +38,18 @@ public class CoDriver extends Operator {
                         while (armExtnd2.getSelectedSensorPosition() * 0.17578152 < 150) {
                             armExtnd1.set(TalonFXControlMode.PercentOutput, -0.35);
                             armExtnd2.set(TalonFXControlMode.PercentOutput, 0.35);
-                        } // else if(armExtnd2.getSelectedSensorPosition()*0.17578152 > 145) {
+                        }
+                    } else if(armExtnd2.getSelectedSensorPosition()*0.17578152 > 145) {
                         armExtnd1.set(TalonFXControlMode.PercentOutput, 0.0);
                         armExtnd2.set(TalonFXControlMode.PercentOutput, 0.0);
                     }
-                    if (controller.getLeftBumper() == false && controller.getAButton() == false && (armExtnd2.getSelectedSensorPosition() * 0.17578152 > 25 || Math.abs(armExtnd1.getSelectedSensorPosition()) * 0.17578152 > 25)) {
+                    if (!controller.getLeftBumper() && !controller.getAButton() && (armExtnd2.getSelectedSensorPosition() * 0.17578152 > 25 || Math.abs(armExtnd1.getSelectedSensorPosition()) * 0.17578152 > 25)) {
                         isArmExtended = false;
                         while (armExtnd2.getSelectedSensorPosition() * 0.17578152 > 10) {
                             armExtnd1.set(TalonFXControlMode.PercentOutput, 0.35);
                             armExtnd2.set(TalonFXControlMode.PercentOutput, -0.35);
                         }
-                        // } else if(armExtnd2.getSelectedSensorPosition()*0.17578152 < 0) {
+                    } else if(armExtnd2.getSelectedSensorPosition()*0.17578152 < 0) {
                         armExtnd1.set(TalonFXControlMode.PercentOutput, 0.01);
                         armExtnd2.set(TalonFXControlMode.PercentOutput, -0.01);
                     }
@@ -83,23 +87,29 @@ public class CoDriver extends Operator {
             armExtnd2.set(TalonFXControlMode.PercentOutput, 0);
         } 
         if (controller.getRightTriggerAxis() > 0.1) {
+            double voltage = RobotController.getBatteryVoltage();
             if (IntakeMotors.upperHoopCR) {
                 IntakeMotors.tipFront.set(TalonFXControlMode.PercentOutput, -0.50); //-0.50 upper hub close range
-                IntakeMotors.tipBack.set(TalonFXControlMode.PercentOutput, 0.12); //0.12 Tip Back -0.08 | Tip Front -0.4
+                IntakeMotors.tipBack.set(TalonFXControlMode.PercentOutput, 0.10); //0.12 Tip Back -0.08 | Tip Front -0.4
                 delayedShootRumble(2); //2.2 from low and close
             } else if (IntakeMotors.upperHoopMR) {
-                IntakeMotors.tipFront.set(TalonFXControlMode.PercentOutput, -0.45); //-0.45 upper hub mid range
+                IntakeMotors.tipFront.set(TalonFXControlMode.PercentOutput, -0.50); //-0.45 upper hub mid range
                 IntakeMotors.tipBack.set(TalonFXControlMode.PercentOutput, -0.08); //-0.08
                 delayedShootRumble(2); //3.5 from low and close
             } else if (IntakeMotors.upperHoopLR) {
-                IntakeMotors.tipFront.set(TalonFXControlMode.PercentOutput, -0.56 //-0.56
-                ); // upper hub long range
+                IntakeMotors.tipFront.set(TalonFXControlMode.PercentOutput, -0.56);
+                 //-0.56 // upper hub long range
                 IntakeMotors.tipBack.set(TalonFXControlMode.PercentOutput, -0.10); //-0.10
                 delayedShootRumble(2); //4.5 from low and close
-            } else {
-                double distance = (((Limelight)Robot.operators[2]).getDistance() + 6)/12;
-                IntakeMotors.tipFront.set(TalonFXControlMode.PercentOutput, -(0.0149*distance+0.3428)); // upper hub mid range
-                IntakeMotors.tipBack.set(TalonFXControlMode.PercentOutput, -(0.0027*distance+0.0605));
+            } else {  
+                double distance = (((Limelight)Robot.operators[2]).getDistance() + 6) / 12;
+                if (distance > 300/12){
+                    distance = 10;
+                } else if (distance < -1){
+                    distance = 10;
+                }
+                IntakeMotors.tipFront.set(TalonFXControlMode.PercentOutput, -(0.0149*distance+.3428)); // upper hub mid range
+                IntakeMotors.tipBack.set(TalonFXControlMode.PercentOutput, -(0.0027*distance+.0605));
             }
         } else if (controller.getAButton()) {
             intakeMotors.spinSecondaryReverse(0.5);
@@ -108,12 +118,16 @@ public class CoDriver extends Operator {
             controller.setRumble(RumbleType.kLeftRumble, 0);
             controller.setRumble(RumbleType.kRightRumble, 0);
             if (!controller.getLeftBumper()) {
-                IntakeMotors.tipFront.set(TalonFXControlMode.PercentOutput, -0.11111); // upper hub mid range
-                IntakeMotors.tipBack.set(TalonFXControlMode.PercentOutput, -0.2);
+                IntakeMotors.tipFront.set(TalonFXControlMode.PercentOutput, -0.11111*1.05); // upper hub mid range
+                IntakeMotors.tipBack.set(TalonFXControlMode.PercentOutput, -0.2*1.05);
             }
         }
+        double distance = (((Limelight)Robot.operators[2]).getDistance() + 70) / 12;
+        if (distance > 25 || distance < -1){
+            distance = 10;
+        }
         // Intake main control code
-
+        SmartDashboard.putNumber("Limelight Distance", distance);
         // upperhoop and distance toggle control
         if (controller.getPOV() == 0) { // Upper hoop close range
             IntakeMotors.upperHoopCR = true;
@@ -144,12 +158,12 @@ public class CoDriver extends Operator {
         } else if (controller.getAButton()) {
             intakeMotors.spinMainReverse(0.5);
             armSpin.set(TalonSRXControlMode.PercentOutput, -0.35);
-        } else if (controller.getLeftBumper()) {
+        } else if (controller.getLeftBumper() || controller.getLeftTriggerAxis() > 0.1) {
             IntakeMotors.mainFront.set(TalonSRXControlMode.PercentOutput, 0.5);
             IntakeMotors.mainBack.set(TalonSRXControlMode.PercentOutput, 0.5);
             armSpin.set(TalonSRXControlMode.PercentOutput, 0.35);
             IntakeMotors.tipFront.set(TalonFXControlMode.PercentOutput, -0.1111);
-            IntakeMotors.tipBack.set(TalonFXControlMode.PercentOutput, -0.2);
+            IntakeMotors.tipBack.set(TalonFXControlMode.PercentOutput, -0.2);        
         } else {
             intakeMotors.stopMain();
             armSpin.set(TalonSRXControlMode.PercentOutput, 0);
